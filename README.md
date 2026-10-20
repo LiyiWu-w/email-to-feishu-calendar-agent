@@ -53,3 +53,32 @@ python -m unittest discover -s tests -v
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+## Architecture / 系统架构
+
+```mermaid
+flowchart TD
+    A["163 Email / IMAP"] --> B["Python Email Parser"]
+    B --> C["DeepSeek AI Extraction"]
+    C --> D["Structured Events"]
+    D --> E["Preview / Human Review"]
+    E --> F{"Explicit Approval?"}
+    F -->|No| G["No Calendar Changes"]
+    F -->|Yes| H["Feishu Calendar API"]
+    H --> I["Remote Duplicate Check"]
+    I --> J["Create Missing Events Only"]
+```
+
+### Design principles / 设计原则
+
+- **Human-in-the-loop:** AI extracts potential events, but does not authorize calendar writes.
+- **Privacy-first:** Run real mailbox workflows in a private repository.
+- **Idempotency:** Check existing Feishu Calendar events before creating new ones.
+- **Uncertainty-aware:** Relative deadlines require human verification.
+- **Testable:** Unit tests run through GitHub Actions CI.
+
+### Limitations / 当前限制
+
+The public version has passed six unit tests, but has not yet been validated end-to-end with an independent user's accounts.
+
+公开版本已通过六项单元测试，但尚未完成第三方账号的端到端验证。
