@@ -1,0 +1,38 @@
+name: Manually sync reviewed events (private fork only)
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Explicit one-time authorization'
+        required: true
+        type: choice
+        options:
+          - 'NO'
+          - 'WRITE_APPROVED_ONLY'
+      events_json:
+        description: '1-5 reviewed events as JSON; visible in workflow metadata, use only in private repositories'
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: approved-calendar-write
+  cancel-in-progress: false
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install requests
+      - name: Write approved events only
+        env:
+          APPROVE_SYNC: ${{ inputs.confirm }}
+          APPROVED_EVENTS_JSON: ${{ inputs.events_json }}
+          FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
+          FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
+          FEISHU_CALENDAR_ID: ${{ vars.FEISHU_CALENDAR_ID }}
+          DRY_RUN: 'true'
+        run: python sync_approved.py
